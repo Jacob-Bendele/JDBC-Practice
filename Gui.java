@@ -4,37 +4,68 @@ import javax.swing.JTextArea;
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.awt.event.ActionEvent;
 import javax.swing.JTextField;
-
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
 public class Gui {
 
-	private DatabaseConnection db;
+	private  DatabaseConnection db;
 	private JFrame frame;
 	private JTextField textField;
 	private JTextField textField_1;
 	private JPasswordField passwordField;
-	private String[] driverChoices = {"com.mysql.cj.jdbc.Driver", "oracle.jdbc.driver.OracleDriver","COM.ibm.db2.jdbc.net.DB2Driver", "com.jdbc.odbc.JdbcOdbcDriver"};
+	private JTable table;
+	private String[] driverChoices;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
+	public static void main( String[] args) 
+	{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					Gui window = new Gui();
+					 Gui window = new Gui();
 					window.frame.setVisible(true);
-				} catch (Exception e) {
+				} 
+				catch ( Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+	}
+
+	private void displayResultsTable(Results results) throws SQLException
+	{
+		int numberOfColumns = results.metaData.getColumnCount();
+		ResultSet resultSet = results.resultSet;
+		DefaultTableModel tableModel = new DefaultTableModel();
+		
+		// 
+		for (int i = 1; i <= numberOfColumns; i++)
+		{
+			tableModel.addColumn(results.metaData.getColumnLabel(i));
+		}
+
+		Object o[] = new Object[numberOfColumns];
+
+		while(resultSet.next())
+		{
+			for(int i = 1; i <= numberOfColumns; i++)
+			{
+				o[i-1] = resultSet.getObject(i);
+				//tableModel.setValueAt(resultSet.getObject(i), resultSet.getRow(), i);
+			}
+
+			tableModel.addRow(o);
+		}
+
+		table.setModel(tableModel);
 	}
 
 	/**
@@ -42,13 +73,16 @@ public class Gui {
 	 */
 	public Gui() {
 		db = new DatabaseConnection();
+		driverChoices = new String[]{"com.mysql.cj.jdbc.Driver", "oracle.jdbc.driver.OracleDriver",
+			            "COM.ibm.db2.jdbc.net.DB2Driver", "com.jdbc.odbc.JdbcOdbcDriver"};
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	private void initialize() 
+	{
 		frame = new JFrame();
 		frame.setBounds(100, 100, 680, 485);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -87,10 +121,6 @@ public class Gui {
 		textArea.setBounds(342, 34, 321, 172);
 		frame.getContentPane().add(textArea);
 
-		JTextArea textArea_1 = new JTextArea();
-		textArea_1.setBounds(6, 258, 668, 146);
-		frame.getContentPane().add(textArea_1);
-
 		JComboBox<String> comboBox = new JComboBox<>(driverChoices);
 		comboBox.setBounds(106, 35, 206, 27);
 		frame.getContentPane().add(comboBox);
@@ -125,35 +155,56 @@ public class Gui {
 		passwordField.setBounds(106, 135, 206, 26);
 		frame.getContentPane().add(passwordField);
 
+		table = new JTable();
+	
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBounds(6, 258, 668, 151);
+		frame.getContentPane().add(scrollPane);
+		
 		btnNewButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				// Send text from textarea to method execute SQL Command
-				try {
-					String response = db.executeSqlCommand(textArea.getText());
+				try 
+				{
+					Results results = db.executeSqlCommand(textArea.getText());
+					displayResultsTable(results);
 				} 
-				catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				catch (SQLException sqlException) 
+				{
+					JOptionPane.showMessageDialog(null, sqlException.getMessage(),
+					"Database Error", JOptionPane.ERROR_MESSAGE);
 				}
-				JOptionPane.showMessageDialog(null, "");
+				
+			}
+		});
+
+		btnClearResultsWindow.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) 
+			{
+				table.getModel();
 			}
 		});
 
 		btnClearSqlCommands.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// Clears the SQL command text area.
+			public void actionPerformed(ActionEvent e) 
+			{
 				textArea.setText(null);
 			}
 		});
 
 		btnConnectToDB.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				// Sends username and password to DB for connection
-				try {
+				try 
+				{
 					db.connectToDB(comboBox.getSelectedItem().toString(), comboBox_1.getSelectedItem().toString(), 
-						textField_1.getText(), passwordField.getPassword());
+								   textField_1.getText(), passwordField.getPassword());
+					textField.setText("Connected to " + comboBox_1.getSelectedItem());
 				} 
-				catch (ClassNotFoundException | SQLException e1) {
+				catch (ClassNotFoundException | SQLException e1) 
+				{
 					e1.printStackTrace();
 				}
 
