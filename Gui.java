@@ -15,6 +15,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JOptionPane;
 
+// GUI was creaetd using Swing and the window builder tool add on for eclipse.
 public class Gui {
 
 	private  DatabaseConnection db;
@@ -59,7 +60,6 @@ public class Gui {
 			for(int i = 1; i <= numberOfColumns; i++)
 			{
 				o[i-1] = resultSet.getObject(i);
-				//tableModel.setValueAt(resultSet.getObject(i), resultSet.getRow(), i);
 			}
 
 			tableModel.addRow(o);
@@ -68,9 +68,7 @@ public class Gui {
 		table.setModel(tableModel);
 	}
 
-	/**
-	 * Create the application.
-	 */
+	// Creates the application.
 	public Gui() {
 		db = new DatabaseConnection();
 		driverChoices = new String[]{"com.mysql.cj.jdbc.Driver", "oracle.jdbc.driver.OracleDriver",
@@ -78,9 +76,7 @@ public class Gui {
 		initialize();
 	}
 
-	/**
-	 * Initialize the contents of the frame.
-	 */
+	// Initialize content of frame.
 	private void initialize() 
 	{
 		frame = new JFrame();
@@ -161,10 +157,10 @@ public class Gui {
 		scrollPane.setBounds(6, 258, 668, 151);
 		frame.getContentPane().add(scrollPane);
 		
+		// This button handles the execution of SQL commands in the command window.
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
-				// Send text from textarea to method execute SQL Command
 				try 
 				{
 					Results results = db.executeSqlCommand(textArea.getText());
@@ -179,6 +175,7 @@ public class Gui {
 			}
 		});
 
+		// This button clears the result from the results pane.
 		btnClearResultsWindow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -186,6 +183,7 @@ public class Gui {
 			}
 		});
 
+		// This button clears the SQL command from the comman pane.
 		btnClearSqlCommands.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
@@ -193,6 +191,7 @@ public class Gui {
 			}
 		});
 
+		// This button initiates the connection to a database.
 		btnConnectToDB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{

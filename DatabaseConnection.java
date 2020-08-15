@@ -1,5 +1,6 @@
 import java.sql.*;
 
+// Class to transfer results from responses back to the GUI.
 class Results
 {
 	String type = null;
@@ -15,7 +16,6 @@ class Results
 		this.metaData = metaData;
 		this.type =	type;
 		this.numberOfColumns = numberOfColumns;
-		//this.numberOfRows = numberOfRows;
 	}
 
 	Results(int status, String type)
@@ -25,21 +25,21 @@ class Results
 	}
 }
 
-
+// Handles all functions for connecting to a database, executring commands, disconnecting.
 public class DatabaseConnection 
 {
-	// These are actually never used because the local instance of the passed variables
-	// are used instead.
 	private boolean connectionEstablished;
 	private String databaseDriver, databaseUrl, username, password;
 	private Statement statement;
 	private Connection connection;
 
+	// Constructs the DatabaseConnection Object with no connection.
 	public DatabaseConnection()
 	{
 		connectionEstablished = false;
 	}
 
+	// Disconeects from the current database.
 	public void dissconnectFromDB() throws SQLException
 	{
 		statement.close();
@@ -47,18 +47,15 @@ public class DatabaseConnection
 		connectionEstablished = false;
 	}
 
+	// Packages the response metaData in a custom Reuslt Class to send back to the GUI.
 	public static Results processMetaData(ResultSet resultSet) throws SQLException
 	{
 		ResultSetMetaData metaData = resultSet.getMetaData();
-		
-		//resultSet.last();
-		//int rowCount = resultSet.getRow();
-		//resultSet.beforeFirst(); 
 
 		return new Results(resultSet, metaData, "Query", metaData.getColumnCount());
-		
 	}
 
+	// Detects whether the SQL command from GUI is a retrieval or an update command then handles execution.
 	public Results executeSqlCommand(String command) throws SQLException
 	{
 		String firstWord = command.split(" ", 2)[0];
@@ -74,30 +71,15 @@ public class DatabaseConnection
 			int status = statement.executeUpdate(command);
 			return new Results(status, "Change");
 		}
-		
-
-
-		//ResultSet resultSet = statement.executeQuery("select * from bikes");
-
-		//while (resultSet.next())
-		///{
-		//	System.out.println(resultSet.getString("bikename"));
-		//}
-
-		//connection.close();
-		//return "";
 	}
 
+	// Creates a connection to the database based on a selected driver, username, and password from the GUI.
 	public void connectToDB(String databaseDriver, String url, String username, char[] password) throws ClassNotFoundException, SQLException 
 	{
 		Class.forName(databaseDriver);
 		
 		connection = DriverManager.getConnection(url, username, String.valueOf(password));
-
 		statement = connection.createStatement();
-
 		connectionEstablished = true;
-
-		
 	}
 }
